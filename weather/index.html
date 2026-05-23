@@ -100,6 +100,14 @@ function goFullscreen(elementId) {
 <!-- NOAA RADAR + WEATHER CHANNEL -->
 <div class="row" style="grid-template-columns: 1fr 1fr;">
 
+        <!-- Weather Channel -->
+    <div class="panel" id="weatherPanel">
+        <div class="label">Weather Channel</div>
+        <div class="fullscreen-btn" onclick="goFullscreen('weatherPanel')">⛶</div>
+        <video id="weather" muted controls></video>
+    </div>
+
+
     <!-- NOAA Radar -->
     <div class="panel" id="radarPanel">
         <div class="label">Map</div>
@@ -107,12 +115,6 @@ function goFullscreen(elementId) {
         <iframe src="https://dtvhub.github.io/Dashboards/weather/weather-alerts.html" frameborder="0"></iframe>
     </div>
 
-    <!-- Weather Channel -->
-    <div class="panel" id="weatherPanel">
-        <div class="label">Weather Channel</div>
-        <div class="fullscreen-btn" onclick="goFullscreen('weatherPanel')">⛶</div>
-        <video id="weather" muted controls></video>
-    </div>
 
 </div>
 <script>
