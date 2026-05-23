@@ -29,7 +29,7 @@
     #ticker {
         display: inline-block;
         padding-left: 100%;
-        animation: scroll 25s linear infinite;
+        animation: scroll 40s linear infinite;
     }
 
     @keyframes scroll {
@@ -51,10 +51,12 @@ async function loadAlerts() {
 
     try {
         const res = await fetch(url, {
-            headers: { "User-Agent": "DashboardApp (you@example.com)" }
+            headers: {
+                "User-Agent": "DTVHubDashboard (dtvhub.github.io)"
+            }
         });
-        const data = await res.json();
 
+        const data = await res.json();
         const alerts = data.features;
 
         if (!alerts.length) {
@@ -77,8 +79,19 @@ async function loadAlerts() {
             return `${event} for ${area} until ${expires} ET`;
         });
 
-        document.getElementById("ticker").textContent =
-            messages.join("   •   ");
+        // Join with separators
+        const tickerText = messages.join("   •   ");
+
+        // Update ticker
+        const ticker = document.getElementById("ticker");
+        ticker.textContent = tickerText;
+
+        // Restart animation cleanly
+        ticker.style.animation = "none";
+        void ticker.offsetWidth; // force reflow
+        ticker.style.animation = "";
+        ticker.style.animation = "scroll 40s linear infinite";
+
     } catch (err) {
         document.getElementById("ticker").textContent =
             "Error loading alerts.";
