@@ -22,8 +22,9 @@
         gap: 6px;
     }
 
+    /* Updated to 6 columns for Alaska */
     .time-row {
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(6, 1fr);
         background: #000;
     }
 
@@ -101,14 +102,15 @@ function goFullscreen(elementId) {
     else if (el.msRequestFullscreen) el.msRequestFullscreen();
 }
 
-// Clock updater
+// Clock updater (updated with Alaska)
 function updateClocks() {
     const zones = [
-        { id: "hst", tz: "Pacific/Honolulu" },
-        { id: "pst", tz: "America/Los_Angeles" },
-        { id: "mst", tz: "America/Denver" },
-        { id: "cst", tz: "America/Chicago" },
-        { id: "est", tz: "America/New_York" }
+        { id: "hst",  tz: "Pacific/Honolulu" },
+        { id: "akst", tz: "America/Anchorage" },
+        { id: "pst",  tz: "America/Los_Angeles" },
+        { id: "mst",  tz: "America/Denver" },
+        { id: "cst",  tz: "America/Chicago" },
+        { id: "est",  tz: "America/New_York" }
     ];
 
     zones.forEach(z => {
@@ -123,9 +125,10 @@ setInterval(updateClocks, 1000);
 
 <body>
 
-<!-- TIME ZONES -->
+<!-- TIME ZONES (updated with Alaska) -->
 <div class="row time-row">
     <div class="time-box"><strong>Hawaii</strong><div id="hst"></div></div>
+    <div class="time-box"><strong>Alaska</strong><div id="akst"></div></div>
     <div class="time-box"><strong>Pacific</strong><div id="pst"></div></div>
     <div class="time-box"><strong>Mountain</strong><div id="mst"></div></div>
     <div class="time-box"><strong>Central</strong><div id="cst"></div></div>
