@@ -13,7 +13,7 @@
         color: white;
         height: 100vh;
         display: grid;
-        grid-template-rows: 80px 1fr 1fr 1fr;
+        grid-template-rows: 80px 1fr 1fr;
         gap: 6px;
     }
 
@@ -132,21 +132,15 @@ setInterval(updateClocks, 1000);
     <div class="time-box"><strong>Eastern</strong><div id="est"></div></div>
 </div>
 
-<!-- CNN -->
-<div class="panel" id="cnnPanel">
-    <div class="label">CNN</div>
-    <div class="fullscreen-btn" onclick="goFullscreen('cnnPanel')">⛶</div>
-    <video id="cnn" muted controls></video>
-</div>
-
-<!-- NICH + WEATHER -->
+<!-- RADAR (replaces Nicholasville) -->
 <div class="row" style="grid-template-columns: 1fr 1fr;">
-    <div class="panel" id="nichPanel">
-        <div class="label">Nicholasville</div>
-        <div class="fullscreen-btn" onclick="goFullscreen('nichPanel')">⛶</div>
-        <video id="nich" muted controls></video>
+    <div class="panel" id="radarPanel">
+        <div class="label">Radar</div>
+        <div class="fullscreen-btn" onclick="goFullscreen('radarPanel')">⛶</div>
+        <iframe src="https://embed.windy.com/embed2.html?radar,overlay=radar" frameborder="0"></iframe>
     </div>
 
+    <!-- Weather Channel -->
     <div class="panel" id="weatherPanel">
         <div class="label">Weather Channel</div>
         <div class="fullscreen-btn" onclick="goFullscreen('weatherPanel')">⛶</div>
@@ -162,8 +156,6 @@ setInterval(updateClocks, 1000);
 </div>
 
 <script>
-loadStream("cnn", "https://turnerlive.warnermediacdn.com/hls/live/586495/cnngo/cnn_slate/VIDEO_0_3564000.m3u8");
-loadStream("nich", "https://video.hazcams.com/nicholasville-ky-us-001/main_stream.m3u8");
 loadStream("weather", "https://twcprod-live.twc-tv.com/v1/manifest/b4d4d63a49309cc5140171fb2e92485c31be1e9e/DSP_6228e4760505741a116f1ba2_twcprod-live/6bf09ce5-366b-463c-b67e-c4b799f73c3f/4.m3u8");
 
 updateClocks();
@@ -171,4 +163,3 @@ updateClocks();
 
 </body>
 </html>
-
