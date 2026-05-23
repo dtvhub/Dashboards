@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>USA Weather Alerts Map</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<style>
+    body {
+        margin: 0;
+        height: 100vh;
+        background: #000;
+    }
+    #map {
+        width: 100%;
+        height: 100%;
+    }
+</style>
+</head>
+
+<body>
+
+<div id="map"></div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+// Create map
+const map = L.map('map').setView([39.5, -98.35], 4); // Center of USA
+
+// Base layer
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18
+}).addTo(map);
+
+// Fetch NWS alerts GeoJSON
+fetch("https://api.weather.gov/alerts/active", {
+    headers: { "User-Agent": "YourAppName (you@example.com)" }
+})
+.then(res => res.json())
+.then(data => {
+    L.geoJSON(data, {
+        style: feature => ({
+            color: "#ff0000",
+            weight: 2,
+            fillOpacity: 0.3
+        }),
+        onEachFeature: (feature, layer) => {
+            const props = feature.properties;
+            layer.bindPopup(`
+                <strong>${props.event}</strong><br>
+                <em>${props.headline || ""}</em><br><br>
+                ${props.description || ""}
+            `);
+        }
+    }).addTo(map);
+});
+</script>
+
+</body>
+</html>
