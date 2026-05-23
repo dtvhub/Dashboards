@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Local News</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+    body {
+        margin: 0;
+        background: #000;
+        font-family: Arial, sans-serif;
+        overflow: hidden;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        height: 100vh;
+        width: 100vw;
+        gap: 4px;
+        background: #000;
+    }
+
+    .cell {
+        background: #000;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid #111; /* subtle border */
+    }
+
+    .cell video,
+    .cell iframe {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        background: #000;
+    }
+
+    /* Optional: fullscreen on double-click */
+    .cell:fullscreen video {
+        object-fit: contain;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="grid">
+
+    <div class="cell">
+        <video src="https://content.uplynk.com/channel/94ab0fcd1b304176a28dbf64521aa6a4.m3u8" autoplay muted playsinline></video>
+    </div>
+
+    <div class="cell">
+        <video src="https://townnews.g-mana.live/media/14d1fd2c-0548-4803-80ad-6657831a7981/profile/0/profileManifest.m3u8?_uid=90a8a322-ec84-4b9e-bca9-446780c8da13&rK=b1&_did=5fa6504f-acb5-0c96-ab85-9b6f68acabf1" autoplay muted playsinline></video>
+    </div>
+
+    <div class="cell">
+        <video src="https://livevideo01.whas11.com/hls/live/2016284/newscasts/live.m3u8" autoplay muted playsinline></video>
+    </div>
+
+    <div class="cell">
+        <video src="https://wx.tegnaone.com/whas/v1/index_2.m3u8" autoplay muted playsinline></video>
+    </div>
+
+</div>
+
+<script>
+    // Optional: double-click any cell to fullscreen it
+    document.querySelectorAll('.cell').forEach(cell => {
+        cell.addEventListener('dblclick', () => {
+            if (!document.fullscreenElement) {
+                cell.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
