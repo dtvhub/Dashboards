@@ -102,9 +102,9 @@ function goFullscreen(elementId) {
 
     <!-- NOAA Radar -->
     <div class="panel" id="radarPanel">
-        <div class="label">NOAA Radar</div>
+        <div class="label">Map</div>
         <div class="fullscreen-btn" onclick="goFullscreen('radarPanel')">⛶</div>
-        <iframe src="https://radar.weather.gov/" frameborder="0"></iframe>
+        <iframe src="https://dtvhub.github.io/Dashboards/weather/weather-alerts.html" frameborder="0"></iframe>
     </div>
 
     <!-- Weather Channel -->
@@ -115,14 +115,6 @@ function goFullscreen(elementId) {
     </div>
 
 </div>
-
-<!-- BEACON -->
-<div class="panel" id="weatheralerts">
-    <div class="label">Weather Alerts Map</div>
-    <div class="fullscreen-btn" onclick="goFullscreen('weatheralerts')">⛶</div>
-    <iframe src="https://dtvhub.github.io/Dashboards/weather/weather-alerts.html" frameborder="0"></iframe>
-</div>
-
 <script>
 loadStream(
     "weather",
