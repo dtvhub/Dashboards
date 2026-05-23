@@ -13,30 +13,13 @@
         color: white;
         height: 100vh;
         display: grid;
-        grid-template-rows: 80px 1fr 1fr;
+        grid-template-rows: 60px 1fr 1fr;
         gap: 6px;
     }
 
     .row {
         display: grid;
         gap: 6px;
-    }
-
-    /* Updated to 6 columns for Alaska */
-    .time-row {
-        grid-template-columns: repeat(6, 1fr);
-        background: #000;
-    }
-
-    .time-box {
-        background: #111;
-        border: 2px solid #222;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        font-size: 20px;
-        text-align: center;
     }
 
     .panel {
@@ -46,9 +29,10 @@
         overflow: hidden;
     }
 
-    .panel video, .panel iframe {
+    .panel iframe, .panel video {
         width: 100%;
         height: 100%;
+        border: none;
         object-fit: contain;
         background: #000;
     }
@@ -101,38 +85,16 @@ function goFullscreen(elementId) {
     else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
     else if (el.msRequestFullscreen) el.msRequestFullscreen();
 }
-
-// Clock updater (updated with Alaska)
-function updateClocks() {
-    const zones = [
-        { id: "hst",  tz: "Pacific/Honolulu" },
-        { id: "akst", tz: "America/Anchorage" },
-        { id: "pst",  tz: "America/Los_Angeles" },
-        { id: "mst",  tz: "America/Denver" },
-        { id: "cst",  tz: "America/Chicago" },
-        { id: "est",  tz: "America/New_York" }
-    ];
-
-    zones.forEach(z => {
-        document.getElementById(z.id).innerText =
-            new Date().toLocaleTimeString("en-US", { timeZone: z.tz });
-    });
-}
-
-setInterval(updateClocks, 1000);
 </script>
 </head>
 
 <body>
 
-<!-- TIME ZONES (updated with Alaska) -->
-<div class="row time-row">
-    <div class="time-box"><strong>Hawaii</strong><div id="hst"></div></div>
-    <div class="time-box"><strong>Alaska</strong><div id="akst"></div></div>
-    <div class="time-box"><strong>Pacific</strong><div id="pst"></div></div>
-    <div class="time-box"><strong>Mountain</strong><div id="mst"></div></div>
-    <div class="time-box"><strong>Central</strong><div id="cst"></div></div>
-    <div class="time-box"><strong>Eastern</strong><div id="est"></div></div>
+<!-- 🔴 WEATHER ALERT TICKER PANEL -->
+<div class="panel" id="tickerPanel">
+    <div class="label">Kentucky Weather Alerts</div>
+    <div class="fullscreen-btn" onclick="goFullscreen('tickerPanel')">⛶</div>
+    <iframe src="https://dtvhub.github.io/Dashboards/weather/kyalertsticker.html"></iframe>
 </div>
 
 <!-- NOAA RADAR + WEATHER CHANNEL -->
@@ -156,15 +118,16 @@ setInterval(updateClocks, 1000);
 
 <!-- BEACON -->
 <div class="panel" id="weatheralerts">
-    <div class="label">Weather Alerts</div>
+    <div class="label">Weather Alerts Map</div>
     <div class="fullscreen-btn" onclick="goFullscreen('weatheralerts')">⛶</div>
     <iframe src="https://dtvhub.github.io/Dashboards/weather/weather-alerts.html" frameborder="0"></iframe>
 </div>
 
 <script>
-loadStream("weather", "https://twcprod-live.twc-tv.com/v1/manifest/b4d4d63a49309cc5140171fb2e92485c31be1e9e/DSP_6228e4760505741a116f1ba2_twcprod-live/6bf09ce5-366b-463c-b67e-c4b799f73c3f/4.m3u8");
-
-updateClocks();
+loadStream(
+    "weather",
+    "https://twcprod-live.twc-tv.com/v1/manifest/b4d4d63a49309cc5140171fb2e92485c31be1e9e/DSP_6228e4760505741a116f1ba2_twcprod-live/6bf09ce5-366b-463c-b67e-c4b799f73c3f/4.m3u8"
+);
 </script>
 
 </body>
