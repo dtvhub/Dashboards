@@ -2,10 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>USA Weather Alerts Map</title>
+<title>Weather Alerts Map</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
 <style>
@@ -25,40 +24,88 @@
 
 <div id="map"></div>
 
-<!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-// Create map
-const map = L.map('map').setView([39.5, -98.35], 4); // Center of USA
+// NWS Standard Colors
+const alertColors = {
+    "Tornado Warning": "#ff0000",
+    "Severe Thunderstorm Warning": "#ffcc00",
+    "Flash Flood Warning": "#00ff00",
+    "Flood Warning": "#00aa00",
+    "High Wind Warning": "#ff8800",
+    "Winter Storm Warning": "#ff00ff",
 
-// Base layer
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 18
+    "Tornado Watch": "#ffcc00",
+    "Severe Thunderstorm Watch": "#ffff00",
+    "Flash Flood Watch": "#00ff88",
+    "Flood Watch": "#00dd88",
+
+    "Winter Weather Advisory": "#9999ff",
+    "Wind Advisory": "#ffaa00",
+    "Heat Advisory": "#ff8800",
+    "Dense Fog Advisory": "#cccccc"
+};
+
+// Determine style based on alert type
+function getAlertStyle(feature) {
+    const event = feature.properties.event;
+    const color = alertColors[event] || "#ffffff";
+
+    const isWatch = event.includes("Watch");
+    const isWarning = event.includes("Warning");
+    const isAdvisory = event.includes("Advisory");
+
+    return {
+        color: color,
+        weight: 2,
+        fillColor: color,
+        fillOpacity: isWarning ? 0.35 : isAdvisory ? 0.15 : 0.0 // Watches = outline only
+    };
+}
+
+// Initialize map
+const map = L.map('map').setView([39.5, -98.35], 4);
+
+// Beacon Dark Basemap
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19
 }).addTo(map);
 
-// Fetch NWS alerts GeoJSON
-fetch("https://api.weather.gov/alerts/active", {
-    headers: { "User-Agent": "YourAppName (you@example.com)" }
-})
-.then(res => res.json())
-.then(data => {
-    L.geoJSON(data, {
-        style: feature => ({
-            color: "#ff0000",
-            weight: 2,
-            fillOpacity: 0.3
-        }),
-        onEachFeature: (feature, layer) => {
-            const props = feature.properties;
-            layer.bindPopup(`
-                <strong>${props.event}</strong><br>
-                <em>${props.headline || ""}</em><br><br>
-                ${props.description || ""}
-            `);
+let alertLayer = null;
+
+// Load NWS Alerts (wrapped in a function for auto-refresh)
+function loadAlerts() {
+    fetch("https://api.weather.gov/alerts/active", {
+        headers: { "User-Agent": "BeaconDashboard (you@example.com)" }
+    })
+    .then(res => res.json())
+    .then(data => {
+        // Remove old layer if it exists
+        if (alertLayer) {
+            map.removeLayer(alertLayer);
         }
-    }).addTo(map);
-});
+
+        // Add new layer
+        alertLayer = L.geoJSON(data, {
+            style: getAlertStyle,
+            onEachFeature: (feature, layer) => {
+                const p = feature.properties;
+                layer.bindPopup(`
+                    <strong>${p.event}</strong><br>
+                    <em>${p.headline || ""}</em><br><br>
+                    ${p.description || ""}
+                `);
+            }
+        }).addTo(map);
+    });
+}
+
+// Initial load
+loadAlerts();
+
+// Auto-refresh every 60 seconds
+setInterval(loadAlerts, 60000);
 </script>
 
 </body>
