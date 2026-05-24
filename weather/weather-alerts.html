@@ -27,9 +27,8 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-// NWS Standard Colors (updated with Flood Watches)
+// NWS Standard Colors
 const alertColors = {
-    // WARNINGS (filled)
     "Tornado Warning": "#ff0000",
     "Severe Thunderstorm Warning": "#ffcc00",
     "Flash Flood Warning": "#00ff00",
@@ -37,20 +36,17 @@ const alertColors = {
     "High Wind Warning": "#ff8800",
     "Winter Storm Warning": "#ff00ff",
 
-    // WATCHES (outline only)
     "Tornado Watch": "#ffcc00",
     "Severe Thunderstorm Watch": "#ffff00",
     "Flash Flood Watch": "#00ff88",
     "Flood Watch": "#00dd88",
 
-    // ADVISORIES (light fill)
     "Winter Weather Advisory": "#9999ff",
     "Wind Advisory": "#ffaa00",
     "Heat Advisory": "#ff8800",
     "Dense Fog Advisory": "#cccccc"
 };
 
-// Determine style based on alert type
 function getAlertStyle(feature) {
     const event = feature.properties.event;
     const color = alertColors[event] || "#ffffff";
@@ -63,42 +59,54 @@ function getAlertStyle(feature) {
         color: color,
         weight: 2,
         fillColor: color,
-        fillOpacity: isWarning ? 0.35 : isAdvisory ? 0.15 : 0.0 // Watches = outline only
+        fillOpacity: isWarning ? 0.35 : isAdvisory ? 0.15 : 0.0
     };
 }
 
-// Initialize map
-const map = L.map('map').setView([39.5, -98.35], 4);
+// Initialize map centered on Kentucky
+const map = L.map('map').setView([37.8, -85.7], 7);
 
 // Beacon Dark Basemap
 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
     maxZoom: 19
 }).addTo(map);
 
-// NOAA Radar Overlay (NEXRAD)
-const radarLayer = L.tileLayer(
-    "https://tilecache.rainviewer.com/v2/radar/{z}/{x}/{y}/1/256.png",
-    {
-        opacity: 0.55,
-        zIndex: 200
-    }
-).addTo(map);
-
+let radarLayer = null;
 let alertLayer = null;
 
-// Load NWS Alerts (wrapped for auto-refresh)
+// Load Radar (RainViewer v2)
+async function loadRadar() {
+    try {
+        const res = await fetch("https://api.rainviewer.com/public/weather-maps.json");
+        const data = await res.json();
+
+        const timestamp = data.radar.nowcast[0].time;
+
+        const radarUrl =
+            `https://tilecache.rainviewer.com/v2/radar/${timestamp}/{z}/{x}/{y}/2/1_1.png`;
+
+        if (radarLayer) {
+            radarLayer.setUrl(radarUrl);
+        } else {
+            radarLayer = L.tileLayer(radarUrl, {
+                opacity: 0.55,
+                zIndex: 200
+            }).addTo(map);
+        }
+    } catch (err) {
+        console.error("Radar load error:", err);
+    }
+}
+
+// Load NWS Alerts
 function loadAlerts() {
     fetch("https://api.weather.gov/alerts/active", {
         headers: { "User-Agent": "BeaconDashboard (dtvhub.github.io)" }
     })
     .then(res => res.json())
     .then(data => {
-        // Remove old layer if it exists
-        if (alertLayer) {
-            map.removeLayer(alertLayer);
-        }
+        if (alertLayer) map.removeLayer(alertLayer);
 
-        // Add new layer
         alertLayer = L.geoJSON(data, {
             style: getAlertStyle,
             onEachFeature: (feature, layer) => {
@@ -114,16 +122,15 @@ function loadAlerts() {
     .catch(err => console.error("Alert load error:", err));
 }
 
-// Initial load
+// Initial loads
+loadRadar();
 loadAlerts();
 
-// Auto-refresh every 60 seconds
-setInterval(loadAlerts, 60000);
-
 // Auto-refresh radar every 2 minutes
-setInterval(() => {
-    radarLayer.setUrl("https://tilecache.rainviewer.com/v2/radar/{z}/{x}/{y}/1/256.png?_=" + Date.now());
-}, 120000);
+setInterval(loadRadar, 120000);
+
+// Auto-refresh alerts every 60 seconds
+setInterval(loadAlerts, 60000);
 </script>
 
 </body>
