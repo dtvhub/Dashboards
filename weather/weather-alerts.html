@@ -63,8 +63,8 @@ function getAlertStyle(feature) {
     };
 }
 
-// Initialize map centered on Kentucky
-const map = L.map('map').setView([37.8, -85.7], 7);
+// Initialize map centered on Lexington
+const map = L.map('map').setView([38.0464, -84.4970], 10);
 
 // Beacon Dark Basemap
 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
@@ -80,7 +80,16 @@ async function loadRadar() {
         const res = await fetch("https://api.rainviewer.com/public/weather-maps.json");
         const data = await res.json();
 
-        const timestamp = data.radar.nowcast[0].time;
+        // Safely get latest radar frame
+        const frames = data.radar?.past || [];
+        const lastFrame = frames[frames.length - 1];
+
+        if (!lastFrame) {
+            console.warn("No radar frames available");
+            return;
+        }
+
+        const timestamp = lastFrame.time;
 
         const radarUrl =
             `https://tilecache.rainviewer.com/v2/radar/${timestamp}/{z}/{x}/{y}/2/1_1.png`;
@@ -121,6 +130,42 @@ function loadAlerts() {
     })
     .catch(err => console.error("Alert load error:", err));
 }
+
+// --- LEGEND CONTROL ---
+const legend = L.control({ position: "bottomright" });
+
+legend.onAdd = function () {
+    const div = L.DomUtil.create("div", "legend");
+    div.style.background = "rgba(0,0,0,0.7)";
+    div.style.padding = "10px 14px";
+    div.style.borderRadius = "6px";
+    div.style.color = "#fff";
+    div.style.fontSize = "14px";
+    div.style.lineHeight = "18px";
+    div.style.maxHeight = "300px";
+    div.style.overflowY = "auto";
+
+    div.innerHTML = "<strong>Alert Key</strong><br><br>";
+
+    for (const [event, color] of Object.entries(alertColors)) {
+        div.innerHTML += `
+            <div style="display:flex;align-items:center;margin-bottom:6px;">
+                <span style="
+                    width:18px;
+                    height:18px;
+                    background:${color};
+                    border:1px solid #fff;
+                    margin-right:8px;
+                "></span>
+                ${event}
+            </div>
+        `;
+    }
+
+    return div;
+};
+
+legend.addTo(map);
 
 // Initial loads
 loadRadar();
