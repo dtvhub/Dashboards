@@ -17,12 +17,40 @@
         width: 100%;
         height: 100%;
     }
+
+    /* Flashing animation for warnings */
+    @keyframes flashWarning {
+        0%   { fill-opacity: 0.35; }
+        50%  { fill-opacity: 0.05; }
+        100% { fill-opacity: 0.35; }
+    }
+
+    /* Legend toggle button */
+    #legendToggle {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        background: #222;
+        color: #fff;
+        padding: 8px 14px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        border: 1px solid #555;
+    }
+
+    /* Legend box */
+    .legend {
+        display: none; /* default hidden */
+    }
 </style>
 </head>
 
 <body>
 
 <div id="map"></div>
+<div id="legendToggle">Show Key</div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -51,7 +79,6 @@ function getAlertStyle(feature) {
     const event = feature.properties.event;
     const color = alertColors[event] || "#ffffff";
 
-    const isWatch = event.includes("Watch");
     const isWarning = event.includes("Warning");
     const isAdvisory = event.includes("Advisory");
 
@@ -59,7 +86,8 @@ function getAlertStyle(feature) {
         color: color,
         weight: 2,
         fillColor: color,
-        fillOpacity: isWarning ? 0.35 : isAdvisory ? 0.15 : 0.0
+        fillOpacity: isWarning ? 0.35 : isAdvisory ? 0.15 : 0.0,
+        className: isWarning ? "flashing-warning" : ""
     };
 }
 
@@ -71,41 +99,7 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
     maxZoom: 19
 }).addTo(map);
 
-let radarLayer = null;
 let alertLayer = null;
-
-// Load Radar (RainViewer v2)
-async function loadRadar() {
-    try {
-        const res = await fetch("https://api.rainviewer.com/public/weather-maps.json");
-        const data = await res.json();
-
-        // Safely get latest radar frame
-        const frames = data.radar?.past || [];
-        const lastFrame = frames[frames.length - 1];
-
-        if (!lastFrame) {
-            console.warn("No radar frames available");
-            return;
-        }
-
-        const timestamp = lastFrame.time;
-
-        const radarUrl =
-            `https://tilecache.rainviewer.com/v2/radar/${timestamp}/{z}/{x}/{y}/2/1_1.png`;
-
-        if (radarLayer) {
-            radarLayer.setUrl(radarUrl);
-        } else {
-            radarLayer = L.tileLayer(radarUrl, {
-                opacity: 0.55,
-                zIndex: 200
-            }).addTo(map);
-        }
-    } catch (err) {
-        console.error("Radar load error:", err);
-    }
-}
 
 // Load NWS Alerts
 function loadAlerts() {
@@ -120,6 +114,15 @@ function loadAlerts() {
             style: getAlertStyle,
             onEachFeature: (feature, layer) => {
                 const p = feature.properties;
+
+                // Apply flashing animation to warnings
+                if (p.event.includes("Warning")) {
+                    const el = layer.getElement();
+                    if (el) {
+                        el.style.animation = "flashWarning 1.8s infinite";
+                    }
+                }
+
                 layer.bindPopup(`
                     <strong>${p.event}</strong><br>
                     <em>${p.headline || ""}</em><br><br>
@@ -167,12 +170,18 @@ legend.onAdd = function () {
 
 legend.addTo(map);
 
-// Initial loads
-loadRadar();
-loadAlerts();
+// Toggle legend visibility
+const legendToggle = document.getElementById("legendToggle");
+legendToggle.addEventListener("click", () => {
+    const legendBox = document.querySelector(".legend");
+    const isHidden = legendBox.style.display === "none" || legendBox.style.display === "";
 
-// Auto-refresh radar every 2 minutes
-setInterval(loadRadar, 120000);
+    legendBox.style.display = isHidden ? "block" : "none";
+    legendToggle.textContent = isHidden ? "Hide Key" : "Show Key";
+});
+
+// Initial load
+loadAlerts();
 
 // Auto-refresh alerts every 60 seconds
 setInterval(loadAlerts, 60000);
