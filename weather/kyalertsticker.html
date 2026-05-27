@@ -29,12 +29,12 @@
     #ticker {
         display: inline-block;
         padding-left: 100%;
-        animation: scroll 40s linear infinite;
+        will-change: transform;
     }
 
     @keyframes scroll {
         from { transform: translateX(0); }
-        to { transform: translateX(-100%); }
+        to   { transform: translateX(-100%); }
     }
 </style>
 </head>
@@ -59,9 +59,11 @@ async function loadAlerts() {
         const data = await res.json();
         const alerts = data.features;
 
+        const ticker = document.getElementById("ticker");
+
         if (!alerts.length) {
-            document.getElementById("ticker").textContent =
-                "No active watches or warnings for Kentucky.";
+            ticker.textContent = "No active watches or warnings for Kentucky.";
+            steadyScroll();
             return;
         }
 
@@ -79,23 +81,34 @@ async function loadAlerts() {
             return `${event} for ${area} until ${expires} ET`;
         });
 
-        // Join with separators
         const tickerText = messages.join("   •   ");
 
-        // Update ticker
-        const ticker = document.getElementById("ticker");
         ticker.textContent = tickerText;
 
-        // Restart animation cleanly
-        ticker.style.animation = "none";
-        void ticker.offsetWidth; // force reflow
-        ticker.style.animation = "";
-        ticker.style.animation = "scroll 40s linear infinite";
+        steadyScroll();
 
     } catch (err) {
-        document.getElementById("ticker").textContent =
-            "Error loading alerts.";
+        const ticker = document.getElementById("ticker");
+        ticker.textContent = "Error loading alerts.";
+        steadyScroll();
     }
+}
+
+// Constant-speed scroll logic
+function steadyScroll() {
+    const el = document.getElementById("ticker");
+    const speed = 120; // pixels per second — adjust to taste
+
+    // Remove old animation
+    el.style.animation = "none";
+
+    // Wait for DOM update
+    requestAnimationFrame(() => {
+        const width = el.scrollWidth;
+        const duration = width / speed;
+
+        el.style.animation = `scroll ${duration}s linear infinite`;
+    });
 }
 
 // Initial load
